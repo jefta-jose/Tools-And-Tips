@@ -1,0 +1,34 @@
+name: Check Changes Before Deploying Lambda
+
+on:
+  workflow_call:
+    outputs:
+      deploy_rmr_forecast_lambda:
+        description: "Whether to deploy RMR Forecast Lambda"
+        value: ${{ jobs.check.outputs.deploy_rmr_forecast_lambda }}
+
+      deploy_out_of_sync_report_lambda:
+        description: "Whether to deploy out of sync report Lambda"
+        value: ${{ jobs.check.outputs.deploy_out_of_sync_report_lambda }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_rmr_forecast_lambda: ${{ steps.filter.outputs.deploy_rmr_forecast_lambda }}
+      deploy_out_of_sync_report_lambda: ${{ steps.filter.outputs.deploy_out_of_sync_report_lambda }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ github.head_ref || github.ref_name }}
+          filters: |
+            deploy_rmr_forecast_lambda:
+              - 'lambda/rmr_forecast/**'
+
+            deploy_out_of_sync_report_lambda:
+              - 'lambda/out_of_sync_report/**'
